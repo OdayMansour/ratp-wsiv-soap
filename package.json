@@ -1,0 +1,11 @@
+{
+  "name": "ratp-wsiv-soap",
+  "version": "1.0.0",
+  "description": "Realtime data from RATP WSIV API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Oday Mansour <odaym@nsour.net>",
+  "license": "ISC"
+}

@@ -1,0 +1,10 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://wsiv.ratp.fr/xsd" xmlns:wsiv="http://wsiv.ratp.fr">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <wsiv:getMission>
+            <wsiv:mission>
+                <xsd:id>116</xsd:id>
+            </wsiv:mission>
+        </wsiv:getMission>
+    </soapenv:Body>
+</soapenv:Envelope>

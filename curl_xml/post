@@ -1,0 +1,22 @@
+#!/bin/sh
+
+echo $1
+ACTION=
+
+grep -c "<wsiv:getLines>" $1 1> /dev/null
+if [ $? = 0 ] 
+then 
+    ACTION=getLines
+fi
+
+grep -c "<wsiv:getStations>" $1 1> /dev/null
+if [ $? = 0 ] 
+then 
+    ACTION=getStations
+fi
+
+curl \
+--header "Content-Type: text/xml;charset=UTF-8" \
+--header "SOAPAction: $ACTION" \
+--data @$1 \
+http://opendata-tr.ratp.fr/wsiv/services/Wsiv | xmllint --format -

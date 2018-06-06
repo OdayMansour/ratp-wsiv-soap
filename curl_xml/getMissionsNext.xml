@@ -1,0 +1,17 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://wsiv.ratp.fr/xsd" xmlns:wsiv="http://wsiv.ratp.fr">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <wsiv:getMissionsNext>
+            <wsiv:station>
+                <xsd:line>
+                    <xsd:id>RA</xsd:id>
+                </xsd:line>
+                <xsd:name>Vincennes</xsd:name>
+                <!-- <xsd:id>1631-2511</xsd:id> -->
+            </wsiv:station>
+            <wsiv:direction>
+                <xsd:sens>*</xsd:sens>
+            </wsiv:direction>
+        </wsiv:getMissionsNext>
+    </soapenv:Body>
+</soapenv:Envelope>

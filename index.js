@@ -2,6 +2,8 @@ const util = require('util');
 const soap = require('soap');
 const fs = require('fs');
 const jsonQuery = require('json-query')
+const express = require('express')
+const app = express()
 
 // Loading resources
 var url = 'wsiv.wsdl';
@@ -61,8 +63,68 @@ for (var i=0; i<metro_id_couples.length; i++) {
     soap.createClient(url, fetchMETROdetails.bind({ line_name: metro_id_couples[i].line_name }));
 }
 
+app.get('/', (req, res) => res.send('Hello World!'))
+
+
+// Dump all data
+app.get('/all', (req, res) => res.send(unified))
+
+
+// Line data and properties
+app.get('/lignes', (req, res) => res.send(
+    {lines: metro_id_couples.map( v => v.line_name )}
+))
+app.get('/ligne/:line_id', (req, res) => res.send(
+    jsonQuery(['lines[linename=?]', req.params.line_id], {data: unified}).value
+))
+app.get('/ligne/:line_id/stations/', (req, res) => res.send(
+    {stations: jsonQuery(['lines[linename=?]', req.params.line_id], {data: unified}).value.stations.map( v => v.stationName )}
+))
+app.get('/ligne/:line_id/directions', (req, res) => res.send(
+    // {directions: [new Set(jsonQuery(['lines[linename=?]', req.params.line_id], {data: unified}).value.stations[0].missions.map( v => v.direction ))] }
+    {directions: uniqueArray(jsonQuery(['lines[linename=?]', req.params.line_id], {data: unified}).value.stations[0].missions.map( v => v.direction )) }
+))
+
+
+// Station data and properties
+app.get('/ligne/:line_id/station/:station_name', (req, res) => res.send(
+    jsonQuery(['stations[stationName=?', req.params.station_name], {
+        data: jsonQuery(['lines[linename=?]', req.params.line_id], {data: unified}).value
+    }).value
+))
+
+
+// Direction data
+app.get('/ligne/:line_id/station/:station_name/direction/:direction', (req, res) => res.send(
+    jsonQuery(['missions[*direction=?', req.params.direction], {
+        data: jsonQuery(['stations[stationName=?', req.params.station_name], {
+            data: jsonQuery(['lines[linename=?]', req.params.line_id], {data: unified}).value
+        }).value
+    }).value
+))
+
+
+// Stuff related to a single train
+app.get('/ligne/:line_id/station/:station_name/direction/:direction/prochain', (req, res) => res.send(
+    jsonQuery(['missions[direction=?', req.params.direction], {
+        data: jsonQuery(['stations[stationName=?', req.params.station_name], {
+            data: jsonQuery(['lines[linename=?]', req.params.line_id], {data: unified}).value
+        }).value
+    }).value
+))
+
+
+// Start listening
+app.listen(1337, () => console.log('Paris metro server listening on port 1337'))
+
 // Playground for testing
 // soap.createClient(url, runAction);
+
+function uniqueArray(arr) {
+    return arr.filter(function(elem, pos) {
+        return arr.indexOf(elem) == pos;
+    })
+}
 
 function fetchMETROdetails(err, client) {
 
@@ -167,9 +229,9 @@ function buildUnified(err, result) {
 
     stationsCount--;
 
-    // Print out entire object once done querying
-    if (stationsCount == 0)
-        printout(err,unified)
+    // // Print out entire object once done querying
+    // if (stationsCount == 0)
+    //     printout(err,unified)
 
 }
 

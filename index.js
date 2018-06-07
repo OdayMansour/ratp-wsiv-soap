@@ -7,12 +7,6 @@ const jsonQuery = require('json-query')
 var url = 'wsiv.wsdl';
 var stations_geo = JSON.parse(fs.readFileSync('emplacement-formatted.json', 'utf8'));
 
-// Main action: Get all train arrival times for all stations on metro lines in metro_id_couples
-soap.createClient(url, fetchMETROdetails);
-
-// Playground for testing
-// soap.createClient(url, runAction);
-
 // Holds mapping of various Metro line identifiers for various contexts
 var metro_id_couples = [
     { line_name: '1', id_stations: '62', id_missions: 'M1'},
@@ -57,6 +51,18 @@ var unified = {
     ]
 };
 
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///// MAIN ACTION STARTS HERE
+///////////////////////////////////////////////////////////////////////////////
+
+// Get all train arrival times for all stations on metro lines in metro_id_couples
+for (var i=0; i<metro_id_couples.length; i++) {
+    soap.createClient(url, fetchMETROdetails.bind({ line_name: metro_id_couples[i].line_name }));
+}
+
+// Playground for testing
+// soap.createClient(url, runAction);
 
 function fetchMETROdetails(err, client) {
 
@@ -73,14 +79,13 @@ function fetchMETROdetails(err, client) {
         }
     };
 
-    // Generate objects from template for each metro line
-    for (var i=0; i<metro_id_couples.length; i++) {
-        args_stations.station.line.id = metro_id_couples[i].id_stations;
-
-        var args_working = new Object();
-        args_working = args_stations;
-        client.getStations(args_working, buildStations);
-    }
+    // Generate objects from template for specific metro line
+    var lineId_stations = jsonQuery(['[line_name=?]', this.line_name], {data: metro_id_couples}).value.id_stations
+    args_stations.station.line.id = lineId_stations;
+    var args_working = new Object();
+    args_working = args_stations;
+    
+    client.getStations(args_working, buildStations);
 
 }
 

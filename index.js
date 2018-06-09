@@ -12,7 +12,7 @@ var stations_geo = JSON.parse(fs.readFileSync('emplacement-formatted.json', 'utf
 // Holds mapping of various Metro line identifiers for various contexts
 var metro_id_couples = [
     { line_name: '1', id_stations: '62', id_missions: 'M1'},
-    { line_name: '2', id_stations: '67', id_missions: 'M2'},
+    // { line_name: '2', id_stations: '67', id_missions: 'M2'},
     // { line_name: '3', id_stations: '68', id_missions: 'M3'},
     // { line_name: '3b', id_stations: '69', id_missions: 'M3b'},
     // { line_name: '4', id_stations: '70', id_missions: 'M4'},
@@ -26,7 +26,7 @@ var metro_id_couples = [
     // { line_name: '11', id_stations: '64', id_missions: 'M11'},
     // { line_name: '12', id_stations: '65', id_missions: 'M12'},
     // { line_name: '13', id_stations: '66', id_missions: 'M13'},
-    // { line_name: '14', id_stations: '55098', id_missions: 'M14'}
+    { line_name: '14', id_stations: '55098', id_missions: 'M14'}
 ];
 
 // Keeps count of lines queried/to query to avoid returning prematurely
@@ -39,18 +39,7 @@ var stations = [];
 // Final unified object to hold all results
 // Created with initial scaffolding in the interest of saving complexity
 var unified = {
-    lines: [
-        {
-            linename: '1',
-            lineid: 'M1',
-            stations: []
-        },
-        {
-            linename: '2',
-            lineid: 'M2',
-            stations: []
-        }
-    ]
+    lines: []
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -60,6 +49,12 @@ var unified = {
 
 // Get all train arrival times for all stations on metro lines in metro_id_couples
 for (var i=0; i<metro_id_couples.length; i++) {
+    var lineobject = {
+        linename: metro_id_couples[i].line_name,
+        lineid: metro_id_couples[i].id_missions,
+        stations: []
+    }
+    unified.lines.push(lineobject)
     soap.createClient(url, fetchMETROdetails.bind({ line_name: metro_id_couples[i].line_name }));
 }
 
@@ -153,8 +148,6 @@ function fetchMETROdetails(err, client) {
 
 function buildStations(err, result) {
 
-    console.log("Lines remaining to process: " + linesCount)
-
     returnedLine = result.return.argumentLine.code
     returnedStations = result.return.stations
     
@@ -170,6 +163,8 @@ function buildStations(err, result) {
 
     linesCount--;
     stationsCount += returnedStations.length;
+
+    console.log("Processed " + returnedLine + ": added " + returnedStations.length + " stations.")
 
     if (linesCount == 0) {
         soap.createClient(url, getMETROtimes)
@@ -206,7 +201,6 @@ function getMETROtimes(err, client) {
 
 function buildUnified(err, result) {
 
-    console.log("Stations remaining to process: " + stationsCount)
     var tempStation = {
         stationName: result.return.argumentStation.name,
         stationid: result.return.argumentStation.id,
@@ -228,6 +222,8 @@ function buildUnified(err, result) {
     }
 
     stationsCount--;
+
+    console.log("Processed " + result.return.argumentStation.name + " - Remaining stations: " + stationsCount)
 
     // // Print out entire object once done querying
     // if (stationsCount == 0)

@@ -12,20 +12,20 @@ var stations_geo = JSON.parse(fs.readFileSync('emplacement-formatted.json', 'utf
 // Holds mapping of various Metro line identifiers for various contexts
 var metro_id_couples = [
     { line_name: '1', id_stations: '62', id_missions: 'M1'},
-    // { line_name: '2', id_stations: '67', id_missions: 'M2'},
-    // { line_name: '3', id_stations: '68', id_missions: 'M3'},
+    { line_name: '2', id_stations: '67', id_missions: 'M2'},
+    { line_name: '3', id_stations: '68', id_missions: 'M3'},
     // { line_name: '3b', id_stations: '69', id_missions: 'M3b'},
-    // { line_name: '4', id_stations: '70', id_missions: 'M4'},
-    // { line_name: '5', id_stations: '71', id_missions: 'M5'},
-    // { line_name: '6', id_stations: '72', id_missions: 'M6'},
-    // { line_name: '7', id_stations: '73', id_missions: 'M7'},
+    { line_name: '4', id_stations: '70', id_missions: 'M4'},
+    { line_name: '5', id_stations: '71', id_missions: 'M5'},
+    { line_name: '6', id_stations: '72', id_missions: 'M6'},
+    { line_name: '7', id_stations: '73', id_missions: 'M7'},
     // { line_name: '7b', id_stations: '74', id_missions: 'M7b'},
-    // { line_name: '8', id_stations: '172562', id_missions: 'M8'},
-    // { line_name: '9', id_stations: '76', id_missions: 'M9'},
-    // { line_name: '10', id_stations: '63', id_missions: 'M10'},
-    // { line_name: '11', id_stations: '64', id_missions: 'M11'},
-    // { line_name: '12', id_stations: '65', id_missions: 'M12'},
-    // { line_name: '13', id_stations: '66', id_missions: 'M13'},
+    { line_name: '8', id_stations: '172562', id_missions: 'M8'},
+    { line_name: '9', id_stations: '76', id_missions: 'M9'},
+    { line_name: '10', id_stations: '63', id_missions: 'M10'},
+    { line_name: '11', id_stations: '64', id_missions: 'M11'},
+    { line_name: '12', id_stations: '65', id_missions: 'M12'},
+    { line_name: '13', id_stations: '66', id_missions: 'M13'},
     { line_name: '14', id_stations: '55098', id_missions: 'M14'}
 ];
 
@@ -255,20 +255,19 @@ function fillUnified(err, result) {
 
     for (var i=0; i<unified.lines.length; i++) {
         if (unified.lines[i].linename == result.return.argumentLine.code) {
+            for (var j=0; j<unified.lines[i].stations.length; j++) {
+                if (unified.lines[i].stations[j].stationName == result.return.argumentStation.name) {
+                    trace("Found station " + result.return.argumentStation.name + " already, removing it")
+                    unified.lines[i].stations.splice(j,1)
+                }
+            }
             unified.lines[i].stations.push(tempStation)
         }
     }
 
     stationsCount--;
-
-    console.log("Processed " + result.return.argumentStation.name + " - Remaining stations: " + stationsCount)
-
-    // // Print out entire object once done querying
-    // if (stationsCount == 0)
-    //     printout(err,unified)
-
+    trace("Added " + result.return.argumentStation.name + " to unified object, remaining stations: " + stationsCount)
 }
-
 
 
 // One-off function to associate Metro stations with their geographic coordinates

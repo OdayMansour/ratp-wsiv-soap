@@ -58,8 +58,27 @@ for (var i=0; i<metro_id_couples.length; i++) {
         stations: []
     }
     unified.lines.push(lineobject)
-    soap.createClient(url, fetchMETROdetails.bind({ line_name: metro_id_couples[i].line_name }));
 }
+
+debug("Created unified object")
+debug(unified)
+
+// Schedule get all train arrival times for all stations on metro lines in metro_id_couples
+for (var i=0; i<metro_id_couples.length; i++) {
+    setTimeout(function(linex){
+        setImmediate(processLine, linex)
+        setInterval(processLine, 60000, linex)
+    }, i*2000, metro_id_couples[i].line_name)
+    // soap.createClient(url, fetchMETROdetails.bind({ line_name: metro_id_couples[i].line_name }));
+
+    debug("Scheduled timer for line " + metro_id_couples[i].line_name)
+}
+
+function processLine(linex) {
+    soap.createClient(url, fetchMETROdetails.bind({ line_name: linex }))
+    debug("Processed line " + linex)
+}
+
 
 app.get('/', (req, res) => res.send('Hello World!'))
 

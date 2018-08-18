@@ -7,5 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Oday Mansour <odaym@nsour.net>",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.3",
+    "json-query": "^2.2.2",
+    "soap": "^0.24.0"
+  }
 }

@@ -42,12 +42,15 @@ var unified = {
     lines: []
 };
 
+var DEBUG = true
+var TRACE = false
+
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 ///// MAIN ACTION STARTS HERE
 ///////////////////////////////////////////////////////////////////////////////
 
-// Get all train arrival times for all stations on metro lines in metro_id_couples
+// Build unified object skeleton
 for (var i=0; i<metro_id_couples.length; i++) {
     var lineobject = {
         linename: metro_id_couples[i].line_name,
@@ -121,6 +124,19 @@ function uniqueArray(arr) {
     })
 }
 
+function debug(message) {
+    if (DEBUG) {
+        console.log("DEBUG - " + message)
+    }
+}
+
+function trace(message) {
+    if (TRACE) {
+        console.log("TRACE - " + message)
+    }
+}
+
+// Will prepare and send a request to get all the stations for a particular line
 function fetchMETROdetails(err, client) {
 
     // Template request to be filled with IDs of Metro lines
@@ -143,9 +159,11 @@ function fetchMETROdetails(err, client) {
     args_working = args_stations;
     
     client.getStations(args_working, buildStations);
+    trace("Fetching stations for line " + this.line_name)
 
 }
 
+// Will add a line's stations to the global stations object. When all lines are ready it will call a function to get the times
 function buildStations(err, result) {
 
     returnedLine = result.return.argumentLine.code
@@ -161,17 +179,14 @@ function buildStations(err, result) {
         stations.push(station);
     }
 
-    linesCount--;
     stationsCount += returnedStations.length;
+    debug("Processed line " + returnedLine + ": added " + returnedStations.length + " stations.")
 
-    console.log("Processed " + returnedLine + ": added " + returnedStations.length + " stations.")
-
-    if (linesCount == 0) {
-        soap.createClient(url, getMETROtimes)
-    }
+    soap.createClient(url, getMETROtimes)
 
 }
 
+// Will prepare and send requests for train arrival times on all stations in object "stations". Will call function to add to unified object
 function getMETROtimes(err, client) {
 
     // Template request to be filled with IDs of Metro lines and station names from earlier call
@@ -194,12 +209,16 @@ function getMETROtimes(err, client) {
 
         args_working = new Object();
         args_working = args_mission;
-        client.getMissionsNext(args_working, buildUnified);
+        trace("Getting train times for line " + lineId + ", station " + stations[i].name)
+        client.getMissionsNext(args_working, fillUnified);
     }
+
+    stations = []
 
 }
 
-function buildUnified(err, result) {
+// Will add each station's train times to the unified object
+function fillUnified(err, result) {
 
     var tempStation = {
         stationName: result.return.argumentStation.name,
